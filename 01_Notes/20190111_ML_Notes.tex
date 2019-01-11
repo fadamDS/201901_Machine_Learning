@@ -1,0 +1,174 @@
+\documentclass[12pt, authoryear]{elsarticle}
+\makeatletter
+\def\ps@pprintTitle{%
+	\let\@oddhead\@empty
+	\let\@evenhead\@empty
+	\def\@oddfoot{}%
+	\let\@evenfoot\@oddfoot}
+\makeatother
+%\usepackage{lmodern}
+% My spacing
+\usepackage{setspace}
+\setstretch{1.5}
+
+%\DeclareMathSizes{12}{14}{10}{10}
+\usepackage[margin=2.5cm]{geometry}    % How to set margins - optimized for 2.5cm      
+
+% See geometry.pdf to learn the layout options. There are lots.
+\geometry{a4paper}                   			% ... or a4paper or a5paper or ... 
+\usepackage{enumitem}
+\usepackage{mathtools}
+%\geometry{landscape}                		% Activate for rotated page geometry
+\usepackage[parfill]{parskip}    			% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}						% Use pdf, png, jpg, or eps§ with pdflatex; use eps in DVI mode
+% TeX will automatically convert eps --> pdf in pdflatex	
+\usepackage{flafter}			
+\usepackage{setspace}
+%\linespread{1.5}
+\usepackage[font={}]{caption}
+\usepackage[bottom]{footmisc}
+\usepackage[capposition=top]{floatrow}   %figure notes
+
+%math packages 
+\usepackage{amssymb}
+\usepackage{fancyhdr}
+\usepackage{graphicx,epsf,subfigure}
+\usepackage{pstricks,pst-node,psfrag}
+\usepackage{amsthm,amssymb,amsmath}
+\usepackage{amsmath,bm}
+
+%mathnotes
+\newcommand{\bbeta}{\mbox{\boldmath $\beta$}}
+\newcommand{\beps}{\mbox{\boldmath $\epsilon$}}
+\newcommand{\bX}{\mbox{\boldmath $X$}}
+\newcommand{\bY}{\mbox{\boldmath $Y$}}
+\newcommand{\bI}{\mbox{\boldmath $I$}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\x}{\textsc{\textbf{x}}}
+\newcommand{\xx}{\textsc{x}}
+
+%add figure 
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\usepackage{rotating}
+\usepackage{pdflscape}
+\usepackage{hyperref}
+\usepackage[round]{natbib}
+
+\usepackage{soul}
+
+\def\bibsection{\section{References}} %%% Make "References" appear before bibliography
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{tablefootnote}
+\usepackage{lscape} 
+\usepackage{animate}
+\usepackage{bbm}
+
+\renewcommand{\contentsname}{Table of Contents} % change name from Contents to Table of Contents
+
+\usepackage{titlesec}
+
+\setcounter{secnumdepth}{4}
+
+%_______________________________________________________________________________________________________%
+%_______________________________________________________________________________________________________%
+%\usepackage[table]{xcolor}% http://ctan.org/pkg/xcolor
+%\usepackage{graphicx,multirow}
+\usepackage{xcolor,colortbl}
+\usepackage{xcolor}
+%\usepackage{graphicx,multirow}
+\usepackage[capposition=top]{floatrow}
+\setcounter{secnumdepth}{4}
+
+\begin{document}
+
+\begin{frontmatter}  %
+
+\title{Lecture Notes Machine Learning}
+
+\author[Add1]{Felix Adam}
+\ead{felix.adam@bracelonagse.eu}
+
+\address[Add1]{Barcelona Graduate School of Economics, Barcelona, Spain}
+%\address[Add2]{Some other Institution, Cape Town, South Africa}
+
+%\cortext[cor]{Corresponding author: Nico Katzke}
+
+\begin{abstract}
+\small{
+This document contains my lecture notes for the course Machine Learning at the Barcelona Graduate School of Economics 
+}
+\end{abstract}
+
+\vspace{1cm}
+
+
+\vspace{0.5cm}
+\end{frontmatter}
+
+\headsep 35pt % So that header does not go over title
+
+\section{Introduction} \label{introduction}
+The main goal of this course is to develop an understanding for the reasons why certain machine learning algorithms work. Interestingly, some modern methods, such as Deep Learning, are not fully understood. It is not clear why these methods work or theory even says they shouldn't be as succesful. 
+
+
+We will start with discussing basic concentration inequalities, followed up by simple mean estimation. After that we'll start discussing supervised learning problems, mostly focused on classification with a minor detour towards regression. We then dive into the topic of empirical risk minimization and VC-theory. This will be followed by a discussion of linear classification, mostly support vector machines and kernel methods. Following, we transition to non-linear methods, especially classification trees and random forests. We finish the course with a discussion of clustering, spectral clustering and k-means and finally online-learning. 
+
+\section{Mean Estimation} \label{mean_estimation}
+
+\subsection{Motivation}
+
+We start the course with a seemingly simple task: estimating the mean of a population, given a sample drawn from the population.
+
+The simplest considerable problem is to consider a setting where we are given independent, identically distributed (i.i.d) draws $X_1, X_2, ... , X_n$ of real-valued random variables. We further assume, that the mean (the expected value) exists $E[X] = m$. (Note that not all distributions have an expected value, such as the cauchy distribution).
+
+Our goal is now, to find an estimate of $m$, based on the observed data. 
+
+An estimator is a function $m_n : \mathbb{R}^n \rightarrow \mathbb{R}$ that maps inputs to a value. We denote our estimate of the mean as the output of the function given the data $m_n(X_1, X_2, ..., X_n) = m_n$ (Note that the value of the estimate is commonly also denoted as $m_n$. 
+
+It is important to realize, that $m_n$ is a function of random variables, so naturally, $m_n$ is also a random variable. Ultimately, we would like to have an estimate (i.e., a data-based quantity) $m_n$ that is close to the real mean $m$. We now need to figure out what "close" means.
+
+\subsection{Measuring the Error}
+
+A possible, and common way to measure the error is through the mean squared error (MSE)
+
+$$ \text{MSE} = E[(m_n - m ) ^2]$$
+
+(Some terminology: The MSE is the risk of the estimator $m_n$ under the squared loss.) However, the MSE is not the only possible measure of "closeness". Others are:
+
+\begin{itemize}
+\item Expected absolute error: $E[|m_n -m|]$
+\item Using probabilities: $P(|m_n - m| > \epsilon) $
+\end{itemize}
+
+We can also discuss the closeness in terms of loss functions $l: \mathbb{R} \rightarrow [0, \infty)$. The corresponding risk is the expected loss $E[l(m_n -m)]$.
+The loss functions associated with the discussed errors are:
+
+\begin{itemize}
+\item MSE: $l(x) = x^2$
+\item Absolute error: $l(x) = |x|$
+\item Probability : $l(x) = \mathbbm{1}_{|x|>\epsilon}$
+\end{itemize}
+
+These criteria of closeness are not the same! So in order to assess an estimator, we first have to set a goal, in which sense do we want the estimator to be "good". 
+
+\subsection{A simple Estimator}
+
+The most natural mean estimator is the \textbf{empirical mean}.
+
+$$ \overline{m_n} = \frac{1}{n} \sum_{i=1}^{n} X_i $$
+
+By the law of large numberers, as the sample size increases, the probability that the sample mean is equal to the true mean converges to 1. 
+
+Further, the sample mean is an unbiased estimate of the true mean, since:
+
+$$E[m_n] =  E[\frac{1}{n} \sum_{i=1}^{n} X_i] = \frac{1}{n}\sum_{i=1}^{n} E[X_i] = m$$
+
+
+
+
+
+
+
+
+\end{document}
