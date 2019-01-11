@@ -36,6 +36,7 @@
 \usepackage{pstricks,pst-node,psfrag}
 \usepackage{amsthm,amssymb,amsmath}
 \usepackage{amsmath,bm}
+\usepackage{amsmath}
 
 %mathnotes
 \newcommand{\bbeta}{\mbox{\boldmath $\beta$}}
@@ -164,11 +165,111 @@ Further, the sample mean is an unbiased estimate of the true mean, since:
 
 $$E[m_n] =  E[\frac{1}{n} \sum_{i=1}^{n} X_i] = \frac{1}{n}\sum_{i=1}^{n} E[X_i] = m$$
 
+(By the linearity of expectations). 
+
+We can now derive the MSE of the sample mean. Since we've shown that the estimator is unbiased, the MSE is the variance of the mean estimator. 
 
 
+\begin{equation*} 
+\begin{split}
+E[(m_n -m)^2] & = E[(\frac{1}{n} \sum_{i=1}^{n}X_i -m)^2] = \text{var}(m_n) = \text{var}(\frac{1}{n} \sum_{i=1}^{n}X_i) \\ 
+&= \frac{1}{n^2} \text{var}(\sum_{i=1}^{n} X_i) = \frac{\sigma^2}{n}
+\end{split}
+\end{equation*}
 
+(By the linearity of the variance of independent random variables.)
+Note that this is only meaningful of the variance is $\sigma^2$ is fininte. Otherwise the MSE is also infinite. 
 
+What does this formula suggest? The error $|m_n - m |$ is typically of the order of $\frac{\sigma}{\sqrt{n}}$. This can be derived from the following observation:
 
+We know from the properties of the variance (not smaller than 0) that:
 
+$$(E[X])^2 \leq E[X^2]$$ 
+
+since $\text{Var}(X) = E[X^2] - (E[X])^2$. From this follows, that $E[X] \leq \sqrt{E[X^2]}$ and thus
+
+$$ E[|m_n -m |] \leq \sqrt{E[m_n - m)^2]} = \frac{\sigma}{\sqrt{n}}$$
+
+Thus, we've established a first bound for the MSE of the sample mean. We can say that the expected distance between the sample mean and the true mean depends on the variance and the sample size.
+
+Very often one needs control probabilities of the type 
+
+$$P(|m_n - m| > \epsilon) $$
+
+This will especially be important when wee need to estimate the mean of not just one but many random variables say $N$ of them and we want to make sure that the errors are simultaneously small. In other words, we need to control 
+
+$$max | m_n^{(j)} - m^{(j)}|$$ 
+
+In order to deal with these types of probabilities and find proper bounds, we'll need to establish some common inequalities.
+
+\subsection{Inequalities for sums of indenpendent random variables}
+
+\subsubsection{Markov's Inequality} \label{markov_ineq}
+
+We start with the Markov inequality. The inequality yields an upper bound for the probability that a random variable $X$ exceeds a given value $t$. We are using the special case of the Markov inequality where $X \geq 0$. Then
+
+$$ P(X \geq t) \leq \frac{E[x]}{t}$$
+
+\underline{Proof}
+
+Let $\mathbbm{1}_t$ be the indicator function that event $t$ occurs.  We have $\mathbbm{1}_{(X \geq t)} = 1$ if $X \geq t$ and $\mathbbm{1}_{(X \leq t)} = 0$ otherwise. Then given that $t > 0$ we find
+
+$$ t \mathbbm{1}_{(X \geq t)} = X $$
+
+since if $X < t$ then $\mathbbm{1}_{(X \leq t)} = 0$ and so $t \mathbbm{1}_{( X > t ) } = 0 \leq X$. Othweise, if$X \geq t$, we have $\mathbbm{1}_{(X \leq t)} = 1$ and thus $t \mathbbm{1}_{( X > t ) } = t \leq X$. Taking the expecations on both sides:
+
+$$ E[t \mathbbm{1}_{(X \geq t)}  \leq E[X] $$
+
+using 
+
+$$ t E[\mathbbm{1}_{(X \geq t)}] = a ( 1 \cdot \mathrm { P } ( X \geq t ) + 0 \cdot \mathrm { P } ( X < t ) ) = t \mathrm { P } ( X \geq t )$$
+
+Thus we have
+
+$$ t P(X \geq t) \leq E[X] $$
+
+\subsubsection{Chebyshev's Inequality} \label{chebyshev}
+
+Chebyshev's inequality bounds the probability that a random variable deviates from it's expected value by more than a given threshold by the variance of the random variable itself. 
+
+$$ P(| X - E[X] | \geq t) \leq \frac{\text{Var}(X)}{t^2}$$
+
+\underline{Proof}
+
+The proof can be derived by using Markov's inequality and by transforming the inequality through taking the square.
+
+$$ P( | X- E[X] | \geq t) = P( (X - E[X] )^2 \geq t^2) \leq \frac{(E[X - E[X])^2}{t^2} = \frac{\text{Var}(X)}{t^2}$$
+
+In particular, for the sample mean we find:
+
+$$ P(| m_n - m | \geq \epsilon) \leq \frac{\text{Var}(m_n)}{t^2} = \frac{\sigma^2}{n\epsilon^2} $$
+
+This implies the weak law of large numbers. The probability that the difference between the sample mean and the true mean is larger than a given $\epsilon$ converges to zero as the sample size grows, for all $\epsilon > 0 $.
+
+\subsubsection{Chernoff Bounds}\label{chernoff}
+
+The Chernoff bound describes exponentially decreasing bounds on tail distributions of sums of indenpendent random variables. It is a sharper bound than Markov's ineqaulity and Chebyshev's inequlaity. 
+
+We use the Chernoff bound since we would like to have sharper bounds for $ P( X - E[X] \geq t) $. 
+
+The Chernoff bound for a random variable $X$ is attained by applying the exponential function:
+
+$$ P( X - E[X] \geq t )  = P( e^{\lambda(X- E[X])} \geq e^{\lambda t)}) \leq \frac{E [\text{exp}(\lambda(X- E[X])]}{\text{exp}(\lambda t)}$$
+
+For any $\lambda > 0 $.  The function $E[e^{tX}]$ of the random variable $X$ is called the \textbf{moment generating function}.  So the probability that $X$ exceeds it's expected value by $t$ is bound by the moment generating function. We can now bound the moment generating function and optimise the bound in $lambda$. 
+
+\underline{Example} 
+
+Taking a random variable $X \sim N(0,1) $ we want to derive $P(X \geq t)$. The moment generating function is $e^{\lambda^2 / 2}$. We therefore have 
+
+$$ P(X \geq t) \leq \frac{e^{\lambda ^2 / 2}}{e^{\lambda t}} = \text{exp}(\lambda^2 / 2 - \lambda t)$$
+
+Optimizing this w.r.t $\lambda$ we get that $\lambda = t$.
+
+\textbf{Why did we do this???} 
+
+\subsection{Back to the Discussion of the Mean Estimator}
+
+Having discussed these bounds, we can now apply them to find bounds for the mean estimator discussed before. 
 
 \end{document}
