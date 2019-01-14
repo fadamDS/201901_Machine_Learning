@@ -202,11 +202,15 @@ $$max | m_n^{(j)} - m^{(j)}|$$
 
 In order to deal with these types of probabilities and find proper bounds, we'll need to establish some common inequalities.
 
-\subsection{Inequalities for sums of indenpendent random variables}
+\subsection{Concentration Inequalities}
+
+Concentration inequalities provide bounds on how a random variable deviates from some value (here often it's expected value). These inequalities can be sorted according to how much information about the random variable is needed in order to use them.
 
 \subsubsection{Markov's Inequality} \label{markov_ineq}
 
-We start with the Markov inequality. The inequality yields an upper bound for the probability that a random variable $X$ exceeds a given value $t$. We are using the special case of the Markov inequality where $X \geq 0$. Then
+We start with the Markov inequality. The inequality yields an upper bound for the probability that a random variable $X$ exceeds a given value $t$. Using Markov's inequality we don't need any information about the random variable, expect that it's expected value exists.
+
+We are using the special case of the Markov inequality where $X \geq 0$. Then
 
 $$ P(X \geq t) \leq \frac{E[x]}{t}$$
 
@@ -214,15 +218,15 @@ $$ P(X \geq t) \leq \frac{E[x]}{t}$$
 
 Let $\mathbbm{1}_t$ be the indicator function that event $t$ occurs.  We have $\mathbbm{1}_{(X \geq t)} = 1$ if $X \geq t$ and $\mathbbm{1}_{(X \leq t)} = 0$ otherwise. Then given that $t > 0$ we find
 
-$$ t \mathbbm{1}_{(X \geq t)} = X $$
+$$ t \mathbbm{1}_{(X \geq t)} \leq X $$
 
 since if $X < t$ then $\mathbbm{1}_{(X \leq t)} = 0$ and so $t \mathbbm{1}_{( X > t ) } = 0 \leq X$. Othweise, if$X \geq t$, we have $\mathbbm{1}_{(X \leq t)} = 1$ and thus $t \mathbbm{1}_{( X > t ) } = t \leq X$. Taking the expecations on both sides:
 
-$$ E[t \mathbbm{1}_{(X \geq t)}  \leq E[X] $$
+$$ E[t \mathbbm{1}_{(X \geq t)}]  \leq E[X] $$
 
 using 
 
-$$ t E[\mathbbm{1}_{(X \geq t)}] = a ( 1 \cdot \mathrm { P } ( X \geq t ) + 0 \cdot \mathrm { P } ( X < t ) ) = t \mathrm { P } ( X \geq t )$$
+$$ t E[\mathbbm{1}_{(X \geq t)}] =  t(  \cdot \mathrm { P } ( X \geq t ) + 0 \cdot \mathrm { P } ( X < t ) ) = t \mathrm { P } ( X \geq t )$$
 
 Thus we have
 
@@ -230,7 +234,7 @@ $$ t P(X \geq t) \leq E[X] $$
 
 \subsubsection{Chebyshev's Inequality} \label{chebyshev}
 
-Chebyshev's inequality bounds the probability that a random variable deviates from it's expected value by more than a given threshold by the variance of the random variable itself. 
+Chebyshev's inequality bounds the probability that a random variable deviates from it's expected value by more than a given threshold by the variance of the random variable itself. Thus, the use of Chebyshev's inequality requires information about the variance.
 
 $$ P(| X - E[X] | \geq t) \leq \frac{\text{Var}(X)}{t^2}$$
 
@@ -256,7 +260,7 @@ The Chernoff bound for a random variable $X$ is attained by applying the exponen
 
 $$ P( X - E[X] \geq t )  = P( e^{\lambda(X- E[X])} \geq e^{\lambda t)}) \leq \frac{E [\text{exp}(\lambda(X- E[X])]}{\text{exp}(\lambda t)}$$
 
-For any $\lambda > 0 $.  The function $E[e^{tX}]$ of the random variable $X$ is called the \textbf{moment generating function}.  So the probability that $X$ exceeds it's expected value by $t$ is bound by the moment generating function. We can now bound the moment generating function and optimise the bound in $lambda$. 
+For any $\lambda > 0 $.  The function $E[e^{tX}]$ of the random variable $X$ is called the \textbf{moment generating function}.  So the probability that $X$ exceeds it's expected value by $t$ is bound by the moment generating function. We can now bound the moment generating function and optimise the bound in $\lambda$. 
 
 \underline{Example} 
 
@@ -266,10 +270,105 @@ $$ P(X \geq t) \leq \frac{e^{\lambda ^2 / 2}}{e^{\lambda t}} = \text{exp}(\lambd
 
 Optimizing this w.r.t $\lambda$ we get that $\lambda = t$.
 
-\textbf{Why did we do this???} 
 
-\subsection{Back to the Discussion of the Mean Estimator}
+\subsection{Bounds for the Mean Estimator}
 
-Having discussed these bounds, we can now apply them to find bounds for the mean estimator discussed before. 
+Having discussed these bounds, we can now apply them to find bounds for the mean estimator discussed before. We want to get an upper bound for the probability that our mean estimator deviates from the true mean by more than a value $t$. 
+
+Let $X_1, ... , X_n$ be i.i.d random variables with mean $m$. Using Chernoff bounds we find:
+
+$$ P(m_n - m \geq t) = P(\sum_{i=1}^n X_i - mn \geq nt) \leq \frac{E[exp(\lambda\sum_{i=1}^n X_i - m)]}{exp(\lambda nt)}$$
+
+In the numerator, we drop $n \dot m$ since we can pull the $m$ into the sum $n$ times. To further simplify this upper bound for the mean we can simplify the numerator:
+
+\begin{equation*} 
+\begin{split}
+E[e^{\lambda \sum_{i=1}^{n} (X_i - m) } ] &= E[\prod_{i=1}^n e^{\lambda (X_i -m)}] \\
+&= \prod_{i=1}^n E[e^{\lambda (X_i -m)}] = (E[e^{\lambda (X_1 - m)}])^n
+\end{split}
+\end{equation*}
+
+The first equality is due to the properties of exponents, the second transformation is due to the independence of the $X_i$ and the third is due to the fact that the $X_i$ are identical. 
+
+Using this result we find:
+
+$$ P( m_n - m \geq t ) \leq \frac{(E[e^{\lambda (X_1 - m)}])^n}{e^{\lambda nt}}$$
+
+The probability that the estimated mean deviates from the true mean by $t$ is bound by the moment generating function and the number of observations $n$. 
+
+\subsection{Hoeffding's Lemma}
+
+Hoeffding's lemma is an inequality that bounds the moment generating function of any bounded random variable. 
+
+Let $X$ be any real valued random variable that is bounded in the interval $[0,1]$. Then 
+
+$$ E[e^{\lambda (X- E[X])}] \leq e^{\frac{\lambda^2}{8}} $$
+
+Hoeffding's lemma shows, that any bounded random variable is a subgaussian. In general for any interval $[a,b]$ we get:
+
+$$ E[e^{\lambda (X- E[X])}] \leq e^{\frac{\lambda^2(b-a)^2}{8}} $$
+
+\subsection{Hoeffding's Inequality}
+
+Hoeffding's inequality provides an upper bound on the probability that the sum of bounded independent random variables deviates from its expected value by more than a ceratin amount. 
+
+Let $X_1, ... , X_n$ be indepdent, random variables taking values in $[0,1]$ with $E[X] = m$. Then the moment generating function of the sum of these variables is bounded by Hoeffding's lemma. 
+
+$$E[e^{\lambda \sum_{(i=1)}^n (X_i - m)}] = \prod_{(i=1)}^n E[e^{\lambda (X_i -m) } ] \leq e^{\frac{n \lambda^2}{8}}$$
+
+Going back to the problem of estimating the mean from data we get (by applying Chernoff bounds):
+
+$$P(m_n - m \geq \epsilon ) \leq \frac{e^{n \lambda^2 / 8}}{e^{\lambda n \epsilon}} = \text{exp} (n[\lambda^2/8 - \lambda \epsilon]) $$
+
+We can minimize this bound with respect to $\lambda$. The optimization yields $\lambda = 4 \epsilon$. Plugging this in to the formula we get \textbf{Hoeffding's inequality}. 
+
+$$ P (m_n - m \geq \epsilon) \leq e^{-2n \epsilon^2}$$ 
+
+For this bound to hold, we don't need much, just independence between the random variables and that they are bounded by $[0,1]$. Hoeffding's inequality therefore gives non-asymptotic and distribution free bound for the distance of the mean estimate from the true mean. 
+
+\subsection{Bernstein's Inequality}
+
+Hoeffding's inequality is elegant and easy to use but (because of it's distribution-free nature) it is necessarily not tight for some distributions. In particular, the dependen on the variance is missing from the exponent. Using the Chernoff bound, one may prove such a bound, called Bernstein's inequality. 
+
+Let $X_1, ..., X_n$ be independent random variables such that $X_i \leq 1$, $E[X_i] = 0$ and $\text{Var}(X_i) = \sigma ^2$ (bounded by 1, zero mean and finite variance). Then for some $b > 0 $
+
+$$P ( \sum_{i = 1}^n X_i \geq t) \leq \text{exp}[\frac{-t^2}{2( \sigma + \frac{bt}{3})}]$$ 
+
+By symmetry we can also say that
+
+$$P(m_n - m \leq -\epsilon) = P(m - m_n \geq \epsilon)$$ 
+
+Accordingly, the probability that the absolute error is bigger than $\epsilon$ is 
+
+$$P( | m_n - m | \geq \epsilon) \leq 2 e^{-2t^2 / n}$$
+
+\subsection{The Union Bound}
+
+The union bound, also known as Boole's inequality, says that for any finite or countable set of events, the probability that at least one of the events happens is no greater than the sum of the probabilities of the individual events. 
+
+$$\mathbb { P } \left( \bigcup _ { i } A _ { i } \right) \leq \sum _ { i } \mathbb { P } \left( A _ { i } \right)$$
+
+
+\subsection{The Median of Means Estimator}
+
+Having discussed the various bounds we can now assess the upper bound for the empirical mean. 
+
+Given i.i.d data $X_1, ... , X_n$ with expected value $E[X]] = m$ and finite variance, then using Chebyshev's inequality we find
+
+$$ P( | m_n - m| \geq \epsilon) \leq \frac{\sigma^2}{n \epsilon^2}$$
+
+this is the best assessment we can make, since we can't assume that the data is bounded. The question is now, whether there is a better estimator than the empirical mean. We will now introduce such an estimator, called the median of means estimator.
+
+\subsubsection{Median of Means}
+
+We divide the data $X_1, X_2, ... , X_n$ into $k$ blocks. For simplicity we assume that $n=km$. So block one will be $X_1, ... , X_m$, block two will be $X_{m+1},..., X_{2m}$ and so on up to block $k$.The median of the means estimator computes the empirical mean $\mu_i$  in each block. We then compute the median of these medians to obtain the estimate of the mean of the full data. We can now analyse the quality of this estimation. 
+For each single estimate $\mu_i$ we know that by Chebyshev's inequality (dropping 
+
+$$ P(| \mu_i - m | \geq \frac{2 \sigma }{\sqrt{m}}) \leq \frac{1}{4}$$
+
+
+
+
+
 
 \end{document}
