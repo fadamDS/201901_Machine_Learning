@@ -14,6 +14,10 @@
 %\DeclareMathSizes{12}{14}{10}{10}
 \usepackage[margin=2.5cm]{geometry}    % How to set margins - optimized for 2.5cm      
 
+
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
 % See geometry.pdf to learn the layout options. There are lots.
 \geometry{a4paper}                   			% ... or a4paper or a5paper or ... 
 \usepackage{enumitem}
@@ -361,10 +365,174 @@ this is the best assessment we can make, since we can't assume that the data is 
 
 \subsubsection{Median of Means}
 
-We divide the data $X_1, X_2, ... , X_n$ into $k$ blocks. For simplicity we assume that $n=km$. So block one will be $X_1, ... , X_m$, block two will be $X_{m+1},..., X_{2m}$ and so on up to block $k$.The median of the means estimator computes the empirical mean $\mu_i$  in each block. We then compute the median of these medians to obtain the estimate of the mean of the full data. We can now analyse the quality of this estimation. 
-For each single estimate $\mu_i$ we know that by Chebyshev's inequality (dropping 
+We divide the data $X_1, X_2, ... , X_n$ into $k$ blocks. For simplicity we assume that $n=km$. So block one will be $X_1, ... , X_m$, block two will be $X_{m+1},..., X_{2m}$ and so on up to block $k$.The median of the means estimator computes the empirical mean $\mu_i$  in each block. We then compute the median of these means ($\hat{m_n}$) to obtain the estimate of the mean of the full data. We can now analyse the quality of this estimation. 
+For each single estimate $\mu_i$ we know that by Chebyshev's inequality:
 
 $$ P(| \mu_i - m | \geq \frac{2 \sigma }{\sqrt{m}}) \leq \frac{1}{4}$$
+
+\underline{Proof}:
+
+Using Chebyshev's inequality we can write:
+$$P(| \mu_i - m | \geq \frac{2 \sigma }{\sqrt{m}}) \leq \frac{\text{Var}(\mu_i)}{\frac{2 \sigma }{\sqrt{m}}} $$
+
+The variance of the mean estimator can be derived using the linearity property of the variance of i.i.d data.
+
+\begin{equation*} 
+\begin{split}
+\text{Var}(\mu_i) &= \text{Var}(\frac{1}{m} \sum_{i=1}^{m}X_i) \\
+&= \frac{1}{m^2} \sum_{i=1}^{m} \text{Var}(X_i) \\
+&= \frac{\sigma^2}{m}
+\end{split}
+\end{equation*}
+
+Using the variance, we arrive at the equation shown above. 
+
+
+Now the question is, how good is the median of the means estimate? By the property of the median, if $|\hat{m_n} - m | > \frac{2 \sigma }{\sqrt{m}} $ then it must be that at most $k/2$ of the $\hat{\mu_i}$ are such that $|\hat{\mu_i} - m | > \frac{2 \sigma }{\sqrt{m}} $. The probability of this is at most
+
+$$P( \text{B}(K,1/4) \geq k/2) = P(B - k/4 \geq k/4) \leq e^{-2k/16}$$
+
+by Hoeffding's inequality (where B is a binomial random variable). Fixing the allowed eror $\delta$ to be $\delta \in (0,1)$ then $e^{-k/8} \leq \delta$ implies $k\geq 8 \log(1/\delta)$. So we choose the number of blocks to be $k = \ceil{8\log(1/\delta) }$ depending on our allowed erro. Then $ m= \frac{n}{k} = \frac{n}{\ceil{8\log(1/\delta) }}$ and we obtain the following.
+
+\underline{Theorem}:
+
+Fix $\delta \in (0,1)$. The mediean of means estimator with $k \ceil{8\log(1/\delta)}$ blocks satisifies 
+
+$$P(|\hat{m_n} - m | \geq \frac{2\sigma \sqrt{8 \log(1/\delta)}}{\sqrt{n}}) \leq \delta $$
+
+The median of means estimator has sub-Gaussian performance under the only condition that the variance is finite. This is much better than the empirical mean. The estimate depends on $\delta$, for each $\delta$ we have a different estimate. 
+
+\section{Random Projections for Dimensionality Reduction}
+
+We can illustrate the power of concentration inequalities (in particular, Chernoff bounds) by a suprising dimensionality reduction technique that has many applications. 
+
+Let $a_1, ... , a_n \in \mathbb{R}^D$ where D is large (in genetics for example). We would like to find a mapping $f : \mathbb{R}^2 \rightarrow \mathbb{R}^d $ such that $f$ preserves pairwise distances in the sense that for all $i,j = 1,..,n$ 
+
+$$|| f(a_i) - f(a_j)|| \approx || a_i - a_j || $$
+
+In other words, we'd like to represent these points in a lower dimension space, without loss of information.  If exact equality is required, there's not much one can do (unless all points fall in a low-dimensional subspace of $\mathbb{R}^D$). However, if we allow some error, the situation changes dramatically.
+
+Let $\epsilon > 0$. We require that for all $i,j = 1,...,n$ 
+
+$$ 1-\epsilon \leq \frac{||f(a_i) - f(a_j)||^2}{||a_i - a_j||^2} \leq 1 + \epsilon $$ 
+
+In other words, we want the ratio of euclidian distances to be close to one, with error $\epsilon$. Surprisingly, such an $f : \mathbb{R}^2 \rightarrow \mathbb{R}^d $ exists, whenever $d \geq \frac{8\log(n)}{\epsilon^2}$ \underline{independently} of how large $D$ is. This is also known as the Johnson-Lindenstrauss-Lemma and used in compressed sensing, dimensionality reduction and graph embedding. 
+
+It is perhaps suprising how easy it is to find such functions. In fact, we can take $f$ to be linear, that is, $f$ is of the form $f(a) = Wa$ where $W =(W_{ij})_{dxD}$ is a matrix. How do we find such a matrix? We can pick it at \underline{random}! We show that if $W_{ij} \sim N(0, 1/d)$ all of them independent, then the matrix $W$ has the desired property, with high probability. 
+
+We note: $f(a_i) - f(a_j) = W(a_i-a_j) = Wb_{ik}$. For any vector $b \in \mathbb{R}^D$:
+
+\begin{equation*}
+\begin{split}
+E[||Wb||^2]  &= E[(\sum_{i=1}^d\sum_{j=1}^D b_j W_ij)^2] \\
+&= \sum_{i=1}^d E[(\sum_{j=1}^D b_j W_{ij})^2] \\
+&= \sum_{i=1}^d E[\sum_{j=1}^D \frac{1}{d}b_j^2] \\
+&= \frac{d}{d} \sum_{j=1}^D b_j^2 = ||d||^2
+\end{split}
+\end{equation*}
+
+because the $W_{ij}$ are independent and have variance $\frac{1}{d}$. 
+
+\noindent\rule[0.5ex]{\linewidth}{1pt}
+Short info for the third step in the derivation:
+We know that $\sum b_i N_i \sim N(0,\frac{\sum b_i^2}{d})$ if $N_i \sim N(0,1/d) (i.i.d) $. We now want to find $E[(\sum_{j=1}^D b_j W_{ij})^2]$. We can make use of the variance: 
+
+$$ \text{Var}(X) = E(X^2) - (E(X))^2 $$
+
+where $ X\sum_{j=1}^D b_j W_{ij}$. In this case we know that $(E(X))^2 = 0 $, by independence. Therefore, $E(X^2) = \text{Var}(X) = ,\frac{\sum b_i^2}{d}$
+
+\noindent\rule[0.5ex]{\linewidth}{1pt}
+
+In particular, for any $a_i,a_j$
+
+$$E[||f(a_i) - f(a_j)||^2] = E[||(a_i - a_j) ||^2] = ||a_i -a_j||^2$$
+
+So one needs to show that, with high probability 
+
+$$ \max_{i,j = 1,...,n} \left|\frac{||W(a_i-a_j)||^2}{||a_i -a_j||^2} -1\right| < \epsilon$$
+
+We can re-write: 
+
+$$\frac{|| W(a_i -a_j)||^2}{||a_i -a_j||^2} = \left|\left|W\frac{a_i-a_j}{||a_i-a_j||}\right|\right|^2 = ||Wb_{ij}||^2$$
+
+Where $b_{ij}$ is a unit vector. But for any unit vector $b \in \mathbb{R}^D$,
+
+$$ ||Wb||^2 -1 = \sum_{i=1}^d(\sum_{j=1}^D W_{ij}b_j)^2 -1 = \sum_{i=1}^d(N_i^2-E(N_i^2))$$
+
+Where $\sum _ { j = 1 } ^ { D } W _ { i j } c _ { j } = N _ { i }$.
+
+This can be shown by using the fact that are i.i.d $W_{ij} \sim N(0,\frac{1}{d})$. Due to independence $E[\sum_{j=1}^D W_{ij}b_j] =  \sum_{j=1}^D b_j E[W_{ij}] = 0$. The variance is $\text{Var}(\sum_{j=1}^D W_{ij}b_j) = \sum_{j=1}^D b_j^2 \text{Var}(W_{ij}) = \text{Var}(W_{ij}) = \frac{1}{d}$ since $b$ is a unit vector and for any unit vector $b$, $\sum_{j=1}^D b_j^2 = 1$. Furthermore, $\sum_{i=1}^dE[N_i^2] = \sum_{i=1}^d \frac{1}{d}= 1$. 
+
+
+Note, that $\sum _ { i = 1 } ^ { d } N _ { i } ^ { 2 } \sim \mathcal { X } ^ { 2 } ( d )$ is a sum of squared random normal variables. We may now prove, using the Chernoff bound, that 
+
+$$P (| ||Wb||^2 -1 | > \epsilon) \leq e^{-d \epsilon^3 / 4}$$
+
+and therefore, by the union bound, since there are $\frac{n(n-1)}{2} < n^2$ points $a_i,a_j$
+
+$$P\left( \max_{i,j=1,...,n} \left| \frac{||W(a_i-a_j)||^2}{||a_i-a_j||^2}\right| > \epsilon )\right) \leq n^2 e^{-\epsilon^3 d/4}$$
+
+Whenever $d > \frac{4 \log(n^2/\delta)}{\epsilon^2}$. 
+
+\section{Binary Classification}
+
+The goal of this section is to establish a mathematical framework for the binary classification task. 
+
+Let $\chi$ denote the set of observations. Given an observation $x\in \chi$, we want to assign it to one of the classes $Y$, in the case of binary classification $Y \in \{0,1\}$. Formally, a classifier is a function $f: \chi \rightarrow \{0,1\}$. The problem can be set up as a statistical hypothesis testing problem. In this framework, one assumes that the observation $X$ is random, and it has different (conditional) distributions depending on which of the two classes it belongs to. Formally, $(X,Y)$ is a pair of random variables taking values in $ \chi x \{0,1\}$. $X$ represents the observation and $Y$ its class or label. 
+
+The point distribution of $(X,Y)$ my be described in various ways. It is given by the pair $(\mu,\eta)$ where $\mu$ is the distribution of $X$, that is, $\mu (A) = P(X \in A)$ for all $A \subset \chi$.  And $\eta: \chi \rightarrow [0,1]$ is the a-posteriori probability $\eta(x) = P(Y=1 | X=x)$. We may also define a priori probabilities $q_1 = P(Y=1), q_0 = P(Y=0)$ and the class conditional distributions $P(X \in A | Y= 0); P(X \in A | Y = 1)$ for $A \subset \chi$. 
+
+\subsection{Quality of a Classifier}
+
+Having set up the problem formally, we now start with discussing the quality of a classifier. Given a classifier $g$, we may measure its quality by the probability of error
+
+$$R(g) = P(g(x) \neq y)$$
+
+where $R(g)$ is the \textbf{risk} of the classifier $g$. 
+
+More generally, we may have a loss function 
+
+$$ l: Y x Y \rightarrow R$$ 
+
+measuring the cost of different types of errors. The risk then becomes the expected value of the loss function: $$R(g) = E[l(g(X),Y)]$$. 
+
+The first natural question is to determine the classifier that minimizes the probability of error. More formally, given a loss function and a pair $(X,Y)$ we may determine the prediction rule $g^*$ that minimzes the risk. This is also called the \textbf{Bayes Predictor} and $R(g)$ is the \textbf{Bayes Risk}.
+
+The Bayes classifier minimizes the probability of error. That is for any classifier $g$,
+
+$$ R(g) \geq R(g^*)$$
+
+
+In the binary classification case we have $l(y , y') = \mathbbm{1}_{y \neq y'}$ with the risk $R(g) = E[ \mathbbm{1}_{y \neq y'}] = P(g(x) = y')$. In regression we use the mean squared error as a loss function. 
+
+We can use the law of iterated expectations to rewrite the risk function
+
+$$R(g) = E[ l(g(x),y)] = E[ E[l(g(x),y)|x]]$$ 
+
+\textbf{Note: Law of Iterated Expectations}
+$$ E[ E[X | Y]]  = E[X]$$
+
+Why condition on $X$? Because we want to minimize the risk for each $X$.  $g^*$ only depends on the conditional distribution of $Y|X=x$. It does not matter where $X$ falss. Only the relative position of $Y$ with respect to$X$ matters. 
+
+We reduce the problem to the following: Let $Y$ take values in $g$. Find $g \in y$ for which $E[l(g,y)]$ is minimized.
+
+\subsubsection{Regression Case}
+In the regression case we have $y=\mathbb{R}$ and 
+\begin{equation*}
+\begin{split}
+\text{MSE} = E[l(g,y)] &= E[(g-y)^2] \\
+&= E[(g - E[y] + E[y] -y)^2] \\
+&= (g-E[y])^2 + E[(y- E[y])^2] + 2(y-E[y])E[E[y]-y] \\
+&= \text{Var}(y) + (g-E[y])^2
+\end{split}
+\end{equation*}
+
+This is minimized when $g^* = E[y]$, which implies that $g^*(x) = E[Y|X=x]$ which is the regression function. 
+
+
+\subsubsection{Binary Classification}
+
+
 
 
 
