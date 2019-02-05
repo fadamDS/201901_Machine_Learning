@@ -51,6 +51,7 @@
 \newcommand{\N}{\mathcal{N}}
 \newcommand{\x}{\textsc{\textbf{x}}}
 \newcommand{\xx}{\textsc{x}}
+\newtheorem{theorem}{Theorem}
 
 %add figure 
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
@@ -475,68 +476,98 @@ $$P\left( \max_{i,j=1,...,n} \left| \frac{||W(a_i-a_j)||^2}{||a_i-a_j||^2}\right
 Whenever $d > \frac{4 \log(n^2/\delta)}{\epsilon^2}$. 
 
 \section{Binary Classification}
+\subsection{The Classification Problem}
 
-The goal of this section is to establish a mathematical framework for the binary classification task. 
+We are all familiar with the issue of binary classification, say classifying animals into cats and dogs, depending on their weight and tail length. However, in order to assess whether we are doing the right thing when we apply a model, we need a mathematical framework. This section will help to develop an understanding of such a framework. 
 
-Let $\chi$ denote the set of observations. Given an observation $x\in \chi$, we want to assign it to one of the classes $Y$, in the case of binary classification $Y \in \{0,1\}$. Formally, a classifier is a function $f: \chi \rightarrow \{0,1\}$. The problem can be set up as a statistical hypothesis testing problem. In this framework, one assumes that the observation $X$ is random, and it has different (conditional) distributions depending on which of the two classes it belongs to. Formally, $(X,Y)$ is a pair of random variables taking values in $ \chi x \{0,1\}$. $X$ represents the observation and $Y$ its class or label. 
+Usually, the starting point of (supervised) binary classification is a set of observations, in our case denoted by $\chi$. We want to assign each of these observations $x \in \chi$, to one of the two classes, say $0$ or $1$. Formally, a classifier is a function $g: \chi \rightarrow \{0,1\}$. The problem can be set up as a statistical hypothesis testing problem. In this framework, one assumes that the observation $X$ is random, and it has different (conditional) distributions depending on which of the two classes it belongs to. Formally, $(X,Y)$ is a pair of random variables taking values in $ \chi x \{0,1\}$. $X$ represents the observation and $Y$ its class or label. 
 
-The point distribution of $(X,Y)$ my be described in various ways. It is given by the pair $(\mu,\eta)$ where $\mu$ is the distribution of $X$, that is, $\mu (A) = P(X \in A)$ for all $A \subset \chi$.  And $\eta: \chi \rightarrow [0,1]$ is the a-posteriori probability $\eta(x) = P(Y=1 | X=x)$. We may also define a priori probabilities $q_1 = P(Y=1), q_0 = P(Y=0)$ and the class conditional distributions $P(X \in A | Y= 0); P(X \in A | Y = 1)$ for $A \subset \chi$. 
+To make the further discussion more concise, we can establish some properties of the point distribution of $(X,Y)$. Most importantly, we want to make statments about the distribution of our parameters or features $X$ which we will call $\mu$ and the a posteriori probabilities of $Y$ given $X$, which we'll call $\eta$. Additionally, we can describe the a priori probabilities of an observation belonging to either class $i$ by $q_i$ and the conditional distribution of $X$ depending on $Y$ as the class conditional distributions. In general we may say that, $X$ can take values in a subset of $\chi$ which we'll call $A$.
 
-\subsection{Quality of a Classifier}
+\begin{itemize}
+\item $\mu (A) = P(X \in A)$ for all $A \subset \chi$
+\item $\eta: \chi \rightarrow [0,1]$, $\eta(x) = P(Y=1 | X=x)$.
+\item $q_1 = P(Y=1), q_0 = P(Y=0)$
+\item $P(X \in A | Y= 0) ,  P(X \in A | Y = 1)$ for $A \subset \chi$
+\end{itemize}
 
-Having set up the problem formally, we now start with discussing the quality of a classifier. Given a classifier $g$, we may measure its quality by the probability of error
+\subsection{Bayes Risk and Classifier}
+
+Having set up the problem formally, we now want to make statments about the quality of a classifier or a prediction rule. In order to do so, we first need to find a baseline classifier, to which we can compare other classifiers. Ideally, this classifier has the optimal decision rule! So what is the optimal decision rule? Let's say for now, that we want to minimize the probability of error. Formally we want to  \textbf{minimize the risk} $R(g)$ of classifier $g$, given by its probability of error.
 
 $$R(g) = P(g(x) \neq y)$$
 
-where $R(g)$ is the \textbf{risk} of the classifier $g$. 
+Let's further assume, that we measure errors in a symmetric way. \\
+$$R(g) = P(g =1 |Y= 0) P(Y=0) + P(g =0 | Y= 1) P(Y=1) $$  
 
-More generally, we may have a loss function 
+This may not be natural (or wise) in some applications. For more general cases, we may have a loss function $l$, which measures the different types of errors. 
 
-$$ l: Y x Y \rightarrow R$$ 
+$$ l: Y \times Y \rightarrow R$$ 
 
-measuring the cost of different types of errors. The risk then becomes the expected value of the loss function: $$R(g) = E[l(g(X),Y)]$$. 
+Given a loss function, the risk is the expected value of said function $R(g) = E[l(g(X),Y)]$
 
-The first natural question is to determine the classifier that minimizes the probability of error. More formally, given a loss function and a pair $(X,Y)$ we may determine the prediction rule $g^*$ that minimzes the risk. This is also called the \textbf{Bayes Predictor} and $R(g)$ is the \textbf{Bayes Risk}.
+Coming back to minimizing the probability of error: Let's say that we know all parameters of the distribution $(X,Y)$, what is the optimal prediction rule which minimizes the probability of error (the risk)? This prediction rule is also called the \textbf{Bayes Predictor} $g^*$ and its risk $R(g^*)$ is the \textbf{Bayes Risk}. We can show, that we minimize the probability of risk, if we classifier observations as belonging to class 1 if we know that their a posteriori probability of belonging to class 1 ($\eta(x)$) is bigger or equal to $\frac{1}{2}$.
 
-The Bayes classifier minimizes the probability of error. That is for any classifier $g$,
-
-$$ R(g) \geq R(g^*)$$
-
-
-In the binary classification case we have $l(y , y') = \mathbbm{1}_{y \neq y'}$ with the risk $R(g) = E[ \mathbbm{1}_{y \neq y'}] = P(g(x) = y')$. In regression we use the mean squared error as a loss function. 
-
-We can use the law of iterated expectations to rewrite the risk function
-
-$$R(g) = E[ l(g(x),y)] = E[ E[l(g(x),y)|x]]$$ 
-
-\textbf{Note: Law of Iterated Expectations}
-$$ E[ E[X | Y]]  = E[X]$$
-
-Why condition on $X$? Because we want to minimize the risk for each $X$.  $g^*$ only depends on the conditional distribution of $Y|X=x$. It does not matter where $X$ falss. Only the relative position of $Y$ with respect to$X$ matters. 
-
-We reduce the problem to the following: Let $Y$ take values in $g$. Find $g \in y$ for which $E[l(g,y)]$ is minimized.
-
-\subsubsection{Regression Case}
-In the regression case we have $y=\mathbb{R}$ and 
 \begin{equation*}
-\begin{split}
-\text{MSE} = E[l(g,y)] &= E[(g-y)^2] \\
-&= E[(g - E[y] + E[y] -y)^2] \\
-&= (g-E[y])^2 + E[(y- E[y])^2] + 2(y-E[y])E[E[y]-y] \\
-&= \text{Var}(y) + (g-E[y])^2
-\end{split}
+g^*(x) = \begin{cases}
+1 &\text{if $\eta(x) > 1/2$}\\
+0 &\text{otherwise}
+\end{cases}
 \end{equation*}
 
-This is minimized when $g^* = E[y]$, which implies that $g^*(x) = E[Y|X=x]$ which is the regression function. 
+We will now show, that this classification rule indeed leads to minimal risk among all classification rules $g$. \\
 
+\begin{theorem}
+The Bayes classifier minimizes the probability of error. That is for any classifier $g$, $R(g) \geq R(g^*)$
+\end{theorem}
 
-\subsubsection{Binary Classification}
+\begin{proof}
+First we express the conditional probability of error for any classifier $g$.
 
+\begin{align*}
+P\left( g(x) \neq y |X=x \right) &= 1- P\left( g(x)=1,y=1 | X=x\right) - P\left(g(x) = 0, y=0 |X=x \right) \\
+&= 1 - \mathbbm{1}_{g(x)=1} P(y=1|X=x) - \mathbbm{1}_{g(x)=0} P(y=0|X=x) \\
+&= 1-  \mathbbm{1}_{g(x)=1} \eta(x) -  \mathbbm{1}_{g(x)=0} (1-\eta(x) 
+\end{align*}
 
+We can see, that the probability of error depends on the a-posteriori probability $\eta(x)$. Now we compare the Bayes classifier $g^*$ to any other classifier $g$.
 
+\begin{align*}
+P(g(x) \neq y |X=x) - P(g^*(x) \neq y | X= x) \\
+&= \eta(x) \left( \mathbbm{1}_{g^*(x)=1} - \mathbbm{1}_{g(x)=1} \right) + (1-\eta(x)) \left( \mathbbm{1}_{g^*(x)=0} - \mathbbm{1}_{g(x)=0} \right) \\
+&= (2\eta(x) -1 ) (\left( \mathbbm{1}_{g^*(x)=1} - \mathbbm{1}_{g(x)=1} \right) \geq 0 
+\end{align*}
 
+Using the fact that $\mathbbm{1}_{g(x) = 0} = 1 -\mathbbm{1}_{g(x) = 1} $. By the defintion of $g^*$, this has to be bigger or equal to zero. Integrating both sides with respect to $\mu(dx)$ yields the theorem. 
 
+\end{proof}
 
+The proof shows, that the loss is
+
+$$L(g) = 1 - \mathbb{E} \left[ \mathbbm{1}_{g(x)=1} \eta(x) \right] -  \mathbb{E} \left[ \mathbbm{1}_{g(x)=0} (1 - \eta(x) )  \right]$$
+
+In particular, the loss of the bayes classifier is
+
+\begin{align*}
+L(g^*) &= 1- \mathbb{E} \left[ \mathbbm{1}_{g(x)>\frac{1}{2}} \eta(x) \right] -  \mathbb{E} \left[ \mathbbm{1}_{g(x) \leq \frac{1}{2}} (1 - \eta(x) )  \right] \\
+&= \mathbb { E } \left[ \min ( \eta ( X ) , 1 - \eta ( X ) ) \right]
+\end{align*}
+
+If $\mathbbm{1}_{g(x)>\frac{1}{2}} $ is true, then the Bayes risk is $1-\eta(x)$, and if $\mathbbm{1}_{g(x)\leq \frac{1}{2}}$ then the Bayes risk is $\eta(x)$.
+
+We can now also make statments about how hard a classification problem is. If the a posteriori probability $\eta(x)$ is close to $\frac{1}{2}$, then the two classes are almost inseperable and the problem is hard. On the other hand if $\eta(x)$ is 1 or 0, the classes are seperable. This doesn't necessarily mean that the problem will be easy to solve, since we generally have no information on $\eta(x)$. Typically, all we have is training data, which is modeled as as indepednednt pairs of random variables $(X_1,Y_1), ... , (X_n,Y_n)$, drawn from the same distribution as $(X,Y)$. The training data set is also written as 
+
+$$D_n( (X_1,Y_1), ... , (X_n,Y_n))$$
+
+given the data, we construct a data-based classifier $g_n(x) = g_n(x,D_n)$. The classifier is random, as it depends on the random data. The probability of error 
+
+$$R(g_n) = P \left(g_n(x) \neq y | D_n \right)$$
+
+is therefore a random variable. Clearly, $R(g_n) \geq R(g^*)$. $R(g_n) - R(g^*)$ is called the excess risk. We would like to construct classifiers, such that $R(g_n)$ is "small". The problem is, that we don't know anything about the distribution - though sometimes we may be willing to assume something about it. Further, what does it mean for a random variable to be small? We could possibly try to minimize $\mathbb{E} \left[ R(g_n)  \right] - R(g^*)$ or try to choose $g$ so that $R(g_n) - R(g^*)$ is small with probability $1-\delta$. We will often relax our goal and fix a class $\mathbb{C}$ of classifiers $g$ and try to minimize the risk over this particular class. 
+
+\section{Nearest Neighbor Classification}
+
+A simple but effective classification rule (in terms of performance) is the nearest neighbor classifier. Let's assume that our set of observations $\chi$ lives in a metric space. 
 
 
 \end{document}
