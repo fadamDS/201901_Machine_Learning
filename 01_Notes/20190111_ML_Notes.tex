@@ -567,7 +567,15 @@ is therefore a random variable. Clearly, $R(g_n) \geq R(g^*)$. $R(g_n) - R(g^*)$
 
 \section{Nearest Neighbor Classification}
 
-A simple but effective classification rule (in terms of performance) is the nearest neighbor classifier. Let's assume that our set of observations $\chi$ lives in a metric space. 
+A simple but effective classification rule (in terms of performance) is the nearest neighbor classifier. Let's assume that our set of observations $\chi$ lives in a metric space, so we can measure distances. (With the ususal properties, non-negativity, triangle-inequality, etc.). Possible distance metrics are the euclidean distance, Manhattan distance ($l_1$ norm), the $l_\infty$ norm or even weighted versions of them.
+
+A natural data-based classifier in this setting is the nearest neighbor rule:
+
+$$g_n(x) = Y_{(1)}(x)$$
+
+where $(X_{(1)},Y_{(1)}(x)), \dots , (X_{(1)},Y_{(1)}(x))$ are the data points ordered according to increasing values of $d(x,X_i)$. Thus, $Y_1(x)$ is the label of the nearest neighbor of $x$. What's appealing about this, is that it's a non-parametric classifier.
+
+The underlying principle of the nearest neighbor rule is that observations which are close to each other are similar. So they will either belong to the same class, or they might even 
 
 
 \end{document}
