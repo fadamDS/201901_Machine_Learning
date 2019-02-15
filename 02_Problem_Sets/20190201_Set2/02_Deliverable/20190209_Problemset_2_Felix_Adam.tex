@@ -127,14 +127,15 @@ In the interval $1 x \leq 2$, $\eta(x)$ is never bigger than $1/2$. Following, t
 $$g^*(x) = \left\{ \begin{array}{ ll} {0} & {\text {if } 0 < x \leq 2} \\
 {0} & {\text{if } 1 < x \leq 2 } \\
 {1} & {\text{if } 2 < x \leq 3 } \\
+{0} & {\text{else } }
 \end{array} \right. $$
 
 The Risk is the expected loss over the whole interval.In the intervals of $0 < x \leq 2$ and $2 < x \leq 3 $ the probability of error is zero. In the interval $1 < x \leq 2$ we define the expected loss as
 
 \begin{align*}
-E\left[l(g^*(x),y) \right]  &= P\left(g^*=0 , Y=1 | X\right) +  P\left(g^*=1 , Y=0 | X\right)\\
-&= \mathbb{1}_{(g^*=1)} P\left(Y=1 | X\right) +\mathbb{1}_{(g^*=0)} P\left(Y=0 | X\right) \\
-&= \mathbb{1}_{(g^*=1)} \eta(x) +\mathbb{1}_{(g^*=0)} (1-\eta(x))
+E\left[l(g^*(x),y) \right]  &= E\left[ P\left(g^*=0 , Y=1 | X\right) +  P\left(g^*=1 , Y=0 | X\right) \right ]\\
+&=E \left[ \mathbb{1}_{(g^*=0)} P\left(Y=1 | X\right) +\mathbb{1}_{(g^*=1)} P\left(Y=0 | X\right) \right] \\
+&= E \left[ \mathbb{1}_{(g^*=0)} \eta(x) +\mathbb{1}_{(g^*=1)} (1-\eta(x)) \right]
 \end{align*}
 
 (Assuming symmetric, 0-1 loss). Consequently, the risk is 
@@ -143,11 +144,9 @@ $$R ^ { * } = \left\{ \begin{array} { l l } { 0 } & { \text { if } 0 < x \leq 1 
 
 We can calculate the expected loss in the interval $1 < x \leq 2$:
 
-$$E_{(1 < x \leq 2}[\eta(x)] = \int _ { 1 } ^ { 2 } \eta ( x ) P ( X = x ) = \int _ { 1 } ^ { 2 } \frac { 1 } { 1 + x } \frac { x + 1 } { 4 } = \frac { 1 } { 4 }$$
+$$E_{(1 < x \leq 2)}[\eta(x)] = \int _ { 1 } ^ { 2 } \eta ( x ) P ( X = x ) = \int _ { 1 } ^ { 2 } \frac { 1 } { 1 + x } \frac { x + 1 } { 4 } = \frac { 1 } { 4 }$$
 
-and 
-
-$$E_{(1 < x \leq 2}[1-\eta(x)] = \int _ { 1 } ^ { 2 } 1-\eta ( x ) P ( X = x ) = \int _ { 1 } ^ { 2 } \frac { x } { 1 + x } \frac { x + 1 } { 4 } = \left[\frac{x^2}{8} \right]_1^2 = \frac { 3 } { 8 }$$
+since we know that $\eta(X) < 1-\eta(x)$ for all $1<x<2$ 
 
 Finally we can write the risk as:
 
